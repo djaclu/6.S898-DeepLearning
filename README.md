@@ -49,7 +49,25 @@ So that forward diffusion process simplifies to this:
 
 Note that up to this point the forward process involves no training, no neural networks, it is only the defining mathematically how to take an input that we assume belongs to an undefined population and taking it through a series of stochastic transformations.
 
-So the reverse of the forward diffusion process mathematical is XT|t-1 is t-1|TX, that is given information about TX, define t-1. And if we knew what the distribution of our input was we might not need a neural net. The things is we don't know what that distrubution is, i.e we don't know how to express mathematically
+So the reverse of the forward diffusion process mathematical is XT|t-1 is t-1|TX, that is given information about TX, define t-1. So T-1|TX and T-2|T-1 ...until T0|t-1. if we knew what the distribution of our input, T0, we might be done. The things is we don't know what that distrubution is, i.e we don't know how to express mathematically mammograms where you can output tumor etc.
+
+This is why we use a neural network, to approximate a high dimensional function. Using out input output pairs which represent the diffusion process for a variety of data that represent our unknown population.
+
+A highly compressed explanation of neural networks but it has been shown that neural networks are universal function approximators given the right architecture. You can imagine them as piece wise linear functions with a bunch of parameters that define the slopes and y interecepts of each of those sections. We use gradient descent then to minimize the error,or our loss function, similarly to how you would fit a line to data. Thus we need a function for our "error" to minimize,
+
+The algebraic derivation of the correct function is relatively complex but lets try to think about it intuitively.
+
+In our case we want a function that defines the "error" or the difference between a picture at an arbitrary state in the diffusion process T and the approximation produced by our neural net which is an estimate of the reverse diffusion process, if we can do that accurately for a bunch of pictures from our populuation and a bunch of timesteps then we know we have arrived at a good approximation of the precise function that does that.
+
+So for part A, a picutre at an arbitrary state in the diffusion process T we can take a picture from our data set (which remember represents a larger unknown population) and apply the forward diffusion process to get X+T+ e. Basically it's orgignal picture + a specific proportion of gaussian error.
+
+Ok and so for part B we have what our reverse process approximation outputs which takes t, and random noise and knowing it needs to output something in the realm of XO produces something in the realm.
+
+I think I finally understand the Diffusion Loss function mystery...i.e why it is sufficient for the target to be random noise? The function we are trying to approximate takes random noise and maps it to an unknown distribution for an arbitrary time between 0 and T  that itself is ultimately conditional on an unknown distribution we are representing with our training data set. We also know that output mathematically is basically ANY x0 from X with a proportion of itself destroyed and replaced with random noise. After all, all our samples are formulated as probability distributions. Ok, part two: the reverse function takes the output of our forward diffusion process which itself takes x0 and Tforward, and reverses it Treverse times which for training is Tforwrd. So informationally, both the target and the approximation are identical except for the noise predicted by our neural net, in fact, since the neural net takes both x0 and the degree of destruction as inputs it doesn't need to learn those. So x0 and the beta variance schedules essentially cancel out and you're left with pure random noise on the left and predicted random noise on the right. I.e there's a distinction between producing noise at any step that is nearly random and producing noise in a sequence that allows you to end up at X. The loss function simplifies to the first because the input takes care of the second part.
+
+Ok the result from this is a function that given random noise it can produce a sample from the approximate distrubtion based on our data set.
+
+That is an overview of Diffusion Models. Still, in a medical context this is still somewhat limited, we can produce images that belong to our data set but without any control of its features.
 
 
 
