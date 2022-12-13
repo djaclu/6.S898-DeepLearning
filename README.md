@@ -1,6 +1,8 @@
 #Diffusion Models: An Intuitive Introduction
 Daniel Jacobs - Massachussetts Institute of Technology - Dec 8th, 2022
 
+NOTE: I haven't yet been able to consolidate the visualziations I designed or integrate my experiments regarding from the Cold Diffusion paper. It may not appear complete in this disorder but I've been working really hard over the last week to get my pogrammings running and to analyze the papers. I plan to continue to work on it and udpate the directory and code until it is ready to publish.
+
 Introduction:
 
 This introduction to Diffusion Models is a guide to a few papers, most notably Denoising Diffusion Probabilistic Models [J.Ho et al., 2020] and Cold Diffusion: Inverting Arbitrary Image Transforms Without Noise [A.Bansal et al., 2022]. It builds on many excellent guides already available while trying to fill in gaps that may make it friendlier to learn. The examples here are based on the MNIST Fashion database.
