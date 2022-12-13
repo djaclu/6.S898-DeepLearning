@@ -10,33 +10,35 @@
   <body>
     <main>
     </main>
-   <p> At first glance the potential of generative models (like DALLE-2 and Stable Diffusion) may seem solidly the domain of the arts and other content creators, after all, synthetic imaging mammogram might do for a person with a real case of potential lesion.
-
-But actually some generative models, including Latent Diffusion Models (LDM), learn to compress the data inputs they are working with. The implication of learning what what information to throw away and what information is important to keep is that the model is internalizing a better understanding or representation of the underlying data. If you can condition this on other variables you can control the generation of the photos.
-
-For some intuition on why this is useful, in mammograms, if a generative model is capable of understanding the formulation behind the apperance of dense tissue vs that of tumor, it may be able to function as a filter, producing an imagine identical to the input but with the dense tissue removed, allowing a radiologist to see a tumor better.
-
-In this article we are going to review how what laten Diffusion Models, and how latent diff works in detail and why they are strong at what they do and then we will explore particular considerations for the medical sector.
+   <p> #Diffusion Models: An Intuitive Introduction Daniel Jacobs - Massachussetts Institute of Technology - Dec 8th, 2022
 
 Introduction:
 
-To understand Latent Diffusion Models let's discuss how a more general class of generative model, diffusion models, work. This introduction of Diffusion Models borrows from a myriad of existing guides online, including this one and elaborates on certain aspects that I think can help those with a bit more gaps.
+This introduction of Diffusion Models borrows from many excellent guides, including this one by AI Summer and additionally elaborates on certain aspects that round out understanding with can help those with a gaps bit more gaps.
 
-At a high-level, diffusion models take an input, like an image, and replace bits of it with Gaussian noise in iterations (T) until the original input is completely destroyed, as T approximates infinity the output of this proccess is almost nearly isotropic random noise.
+At a high-level, diffusion models are functions that have learned to take a "degraded" input (typically Gaussian noise) and determine what would need to be subtracted from it in order to produce an output that generally belongs to a group it has previusly seen. A common example: given an image of white noise and having been trained on images of cats, a diffusion model would learn how to substract pixel values from that image of white noise in order to produce an image of a cat.
 
-This is called the forward diffusion process.
+Diffusion models are inspired by the modeling of molecular systems, one way to think of the diffusion process is as if you were releasing a gas (noise) into a chamber (image) until.
 
-[Slide your cursor over the mammogram above to see the forward diffusion process destroy the sample.]
+In order for the neural network to approximate this function it first needs input-output pairs.
 
-We could then imagine that since as T appraoched infinrity the output of this is compltely random noise, the reverse of that function will take entirely random noise and produce an output that belongs to the same "family" as the input. If you are confused why the recerse process does not recover the original image, bear with me, we will explain that a litttle later.
+To generation of this input-output pairs is called forward diffusion and it consists of taking an input, like an image and replacing bits of it with Gaussian npise in iterations (T) until the original input is completely destroyed. As T approaches infinity you can imagine the output of this function is perfect and absolute random noise.
+
+[Slide your cursor from left to right to forward diffuse the image.]
+
+We can imagine then that the reverse of this function could take entirely random noise and produce an output that belongs to the same "family" as the input.
 
 Having these input, output pairs, a neural net could be theoretically trained to approximate this reverse function, that is, turning random noise into samples from this population, generating data in so.
 
 Lets focus on the forward diffusion process.
 
-!!!!Latent Space explanation!!!
+Mathematically, the forward diffusion process takes the form of a Markov Chain. A Markov chain is when the probability of a given state depends on the ones before them, the simplest version being when it only depends on the event that immediately precedes.
 
-Mathematically, this takes the form of a Markov Chain. A Markov chain is the probablity situation where one event depends on the ones before them, the simplest version is that it only depends on the event that imeediately precedes. , that is, this image at any stage in this process between time step 0 and T as a probability distribution conditional on the step before it, that is the probability of image at step T given information about step T-1. Why? Because as soon as we begin to replace the image with bits of randomness, the output of that process at anypoint is a function of randomness and msut be expressed as a probability distribution defined by a mean and variance. T after 0 are called samples because they are an instance of the distribution that defines that. Even our input, X0 can be seen as an instance from an unknown high dimendioanl distribution, in the medical case where each dimension represents features like whether the image has a tumor, where the tumor is, shape of the breast etc.
+That is, the image at any stage (timestep 0 through T) in this forward diffusion process can be defined as probability distribution conditional on the step before it. In other words, the probability of image at step T given information about step T-1.
+
+Why? Because as soon as we begin to replace the image with bits of randomness, the output of that process at anypoint is a function of randomness and must be expressed as a probability distribution defined by a mean and variance.
+
+The images are called samples because they are an instance of the probability distribution that defines them. Even our input, X0 can be seen as an instance from an unknown high dimendioanl distribution, where each dimension represents features like whether the the cat is big , fluffy or organge.
 
 We can express this in closed format like this:
 
@@ -44,13 +46,15 @@ The distribution of T|X0 is the distribution of T1|T0 * T2|T1 * ... * T|T-1.
 
 where T|t-1 is equal to xXXXX
 
-In practice the proprotion of variance that replaces the original input with random noise is dictated by a variance schedule which is a series of parameters B for each time T.
+In practice the proprotion of noise that replaces the original input with random noise is often dictated by a variance schedule which is a series of parameters B that define how much random noise will be replaces at each time T.
 
 [Look at tree for some intution about this.]
 
 What happens when T is large vs small? https://arxiv.org/pdf/2206.05173.pdf
 
-So far in order to get Xt at timestep T we need to apply it 100 times. If we want a few Xt so that a neural net can interpolate and learn the reverse process then we need 100 timesteps times the amount of samples per image you are training. But through some clever algebra, it has been shown that to produce time a sample at time T you can do this in one step, given a prestep where you multiply your variance schedule. This is referred to as the reparamatrization trick.
+So far in order to see what our image would look like at timestep T we would need to apply it 100 times. If we want a few Xt so that a neural net can interpolate and learn the reverse process then we need 100 timesteps times the amount of samples per image you are training.
+
+But through some clever algebra, it has been shown that to produce time a sample at time T you can do this in one step, given a prestep where you multiply your variance schedule. This is referred to as the reparamatrization trick.
 
 So that forward diffusion process simplifies to this:
 
@@ -70,11 +74,9 @@ So for part A, a picutre at an arbitrary state in the diffusion process T we can
 
 Ok and so for part B we have what our reverse process approximation outputs which takes t, and random noise and knowing it needs to output something in the realm of XO produces something in the realm.
 
-I think I finally understand the Diffusion Loss function mystery...i.e why it is sufficient for the target to be random noise? The function we are trying to approximate takes random noise and maps it to an unknown distribution for an arbitrary time between 0 and T that itself is ultimately conditional on an unknown distribution we are representing with our training data set. We also know that output mathematically is basically ANY x0 from X with a proportion of itself destroyed and replaced with random noise. After all, all our samples are formulated as probability distributions. Ok, part two: the reverse function takes the output of our forward diffusion process which itself takes x0 and Tforward, and reverses it Treverse times which for training is Tforwrd. So informationally, both the target and the approximation are identical except for the noise predicted by our neural net, in fact, since the neural net takes both x0 and the degree of destruction as inputs it doesn't need to learn those. So x0 and the beta variance schedules essentially cancel out and you're left with pure random noise on the left and predicted random noise on the right. I.e there's a distinction between producing noise at any step that is nearly random and producing noise in a sequence that allows you to end up at X. The loss function simplifies to the first because the input takes care of the second part.
-
 Ok the result from this is a function that given random noise it can produce a sample from the approximate distrubtion based on our data set.
 
-That is an overview of Diffusion Models. Still, in a medical context this is still somewhat limited, we can produce images that belong to our data set but without any control of its features. <p>
+That is an overview of Diffusion Models. <p>
     
     
     <script src="sketch.js"></script>
