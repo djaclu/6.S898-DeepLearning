@@ -3,34 +3,27 @@ Daniel Jacobs - Massachussetts Institute of Technology - Dec 8th, 2022
 
 Introduction:
 
-This introduction of Diffusion Models borrows from many excellent guides, including this one by AI Summer and additionally elaborates on certain aspects that round out understanding with can help those with a gaps bit more gaps.
+This introduction to Diffusion Models is a guide to a few papers, most notably Denoising Diffusion Probabilistic Models [J.Ho et al., 2020] and Cold Diffusion: Inverting Arbitrary Image Transforms Without Noise [A.Bansal et al., 2022]. It builds on many excellent guides already available while trying to fill in gaps that may make it friendlier to learn. 
 
-At a high-level, diffusion models are functions that have learned to take a "degraded" input (typically Gaussian noise) and determine what would need to be subtracted from it in order to produce an output that generally belongs to a group it has previusly seen. A common example: given an image of white noise and having been trained on images of cats, a diffusion model would learn how to substract pixel values from that image of white noise in order to produce an image of a cat.
+At a high-level, diffusion models (inspired by the modeling of molecular systems) are functions that take a blank input (like an image of white noise) and predict what would need to be removed from it in order to make a clear output that generally belongs to an observed population (a population here refers to a group that cannot be characterized exactly so instead is approximated through samples, like a dataset).
 
-Diffusion models are inspired by the modeling of molecular systems, one way to think of the diffusion process is as if you were releasing a gas (noise) into a chamber (image) until.
+The input can be interpreted as an unknown instance of that population, degraded by a process that has caused it to lose all its information. The typical process involves adding noise to the input, much like releasing water vapor into a sauna until it becomes hard to see through the diffused steam. A more concrete example: given an image of white noise and having been trained on images of cartoons, a diffusion model would learn how to substract pixel values from the input in order to produce an image of a cartoon.
 
-In order for the neural network to approximate this function it first needs input-output pairs.
+This destructive process is refered to as forward diffusion and it is the first step in building a generative diffusion model. This is because, as you might imagine, if we can get our hands on many examples of how a group of inputs get destroyed then we might be able to train a neural network to approximate the function that does the reverse, i.e. recover an input that has been highly degraded or entirely destroyed.
 
-To generation of this input-output pairs is called forward diffusion and it consists of taking an input, like an image and replacing bits of it with Gaussian npise in iterations (T) until the original input is completely destroyed. As T approaches infinity you can imagine the output of this function is perfect and absolute random noise.
+Let's dive into the typical forward diffusion process. Most research surrounding diffusion models thus far is based on a random destructive process where bits of an image are replaced with Gaussian noise in T steps. As T becomes large the image becomes unrecognizable and we can imagine that as T approaches infinity the result is perfect and absolute randomness.
 
 [Slide your cursor from left to right to forward diffuse the image.]
 
-We can imagine then that the reverse of this function could take entirely random noise and produce an output that belongs to the same "family" as the input.
+We can imagine then that the reverse of this function would, in theory, take perfectly random noise and return an image that hails from the same population as our training dataset. Given only a partially degraded image it would instead restore the original image. Why?
 
-Having these input, output pairs, a neural net could be theoretically trained to approximate this reverse function, that is, turning random noise into samples from this population, generating data in so.
+As soon as we begin to inject the image with random noise, the result becomes a function of randomness and can only be expressed as a probability distribution, defined by a central tendency (e.g. mean) and variance. 
 
-
-Lets focus on the forward diffusion process.
-
-Mathematically, the forward diffusion process takes the form of a Markov Chain. A Markov chain is when the probability of a given state depends on the ones before them, the simplest version being when it only depends on the event that immediately precedes.
-
-That is, the image at any stage (timestep 0 through T) in this forward diffusion process can be defined as probability distribution conditional on the step before it. In other words, the probability of image at step T given information about step T-1.
-
-Why? Because as soon as we begin to replace the image with bits of randomness, the output of that process at anypoint is a function of randomness and must be expressed as a probability distribution defined by a mean and variance.
-
-The images are called samples because they are an instance of the probability distribution that defines them. Even our input, X0 can be seen as an instance from an unknown high dimendioanl distribution,  where each dimension represents features like whether the the cat is big , fluffy or organge.
+Mathematically, stochastic forward diffusion is a Markov Chain. A Markov chain is a way of describing a sequence of events where the probablity of a given state depends on the one immediately precesing it. That is, the image at any step t during the diffusion process depends on the random result at step t-1 before it. In other words, the probability of observing one of the many possible instances of our degraded image at step T is conditional on the observation made at step T-1. The images are referred to as samples because they are an instance of the probability distribution that defines them. Even our original input can be seen as an instance from an unknown distribution, the population referenced earlier. 
 
 We can express this in closed format like this:
+
+q(xt|x0) = N (xt;√α¯tx0,(1 − α¯t)I)
 
 The distribution of T|X0 is the distribution of T1|T0 * T2|T1 * ... * T|T-1.
 
