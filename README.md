@@ -3,7 +3,7 @@ Daniel Jacobs - Massachussetts Institute of Technology - Dec 8th, 2022
 
 Introduction:
 
-This introduction to Diffusion Models is a guide to a few papers, most notably Denoising Diffusion Probabilistic Models [J.Ho et al., 2020] and Cold Diffusion: Inverting Arbitrary Image Transforms Without Noise [A.Bansal et al., 2022]. It builds on many excellent guides already available while trying to fill in gaps that may make it friendlier to learn. 
+This introduction to Diffusion Models is a guide to a few papers, most notably Denoising Diffusion Probabilistic Models [J.Ho et al., 2020] and Cold Diffusion: Inverting Arbitrary Image Transforms Without Noise [A.Bansal et al., 2022]. It builds on many excellent guides already available while trying to fill in gaps that may make it friendlier to learn. The examples here are based on the MNIST Fashion database.
 
 At a high-level, diffusion models (inspired by the modeling of molecular systems) are functions that take a blank input (like an image of white noise) and predict what would need to be removed from it in order to make a clear output that generally belongs to an observed population (a population here refers to a group that cannot be characterized exactly so instead is approximated through samples, like a dataset).
 
@@ -19,55 +19,31 @@ We can imagine then that the reverse of this function would, in theory, take per
 
 As soon as we begin to inject the image with random noise, the result becomes a function of randomness and can only be expressed as a probability distribution, defined by a central tendency (e.g. mean) and variance. 
 
-Mathematically, stochastic forward diffusion is a Markov Chain. A Markov chain is a way of describing a sequence of events where the probablity of a given state depends on the one immediately precesing it. That is, the image at any step t during the diffusion process depends on the random result at step t-1 before it. In other words, the probability of observing one of the many possible instances of our degraded image at step T is conditional on the observation made at step T-1. The images are referred to as samples because they are an instance of the probability distribution that defines them. Even our original input can be seen as an instance from an unknown distribution, the population referenced earlier. 
+Mathematically, stochastic forward diffusion is a Markov Chain. A Markov chain is a way of describing a sequence of events where the probablity of a given state depends on the one immediately precesing it. That is, the image at any step t during the diffusion process depends on the random result at step t-1 before it. In other words, the probability of observing one of the many possible instances of our degraded image at step T is conditional on the observation made at step T-1. The images are referred to as samples because they are an instance of the probability distribution that defines them. Even our original input can be seen as an instance from an unknown distribution, the population referenced earlier.
 
-We can express this in closed format like this:
+[Look at tree for some intution about this.]
 
-q(xt|x0) = N (xt;√α¯tx0,(1 − α¯t)I)
+We can express this in closed format as:
 
 The distribution of T|X0 is the distribution of T1|T0 * T2|T1 * ... * T|T-1.
 
 where T|t-1 is equal to xXXXX
 
-In practice the proprotion of noise that replaces the original input with random noise is often dictated by a variance schedule which is a series of parameters B that define how much random noise will be replaces at each time T.
+In practice the proportion of the image that is swapped with noise can be set to change (i.e. it is not necessarily constant) during each timestep according to a variance schedule that cointains a sequence of ratios B. So far in order to see what our image would look like at timestep T we would need calculate T conditional probabilities. You can imagine that this would quickly become impractical for a large T. Instead, through some clever algebra, [J.Ho et al., 2020] showed it is possible to calculate this in a single step with a small amount of precalculations. This is referred to as the reparametization trick. 
 
-[Look at tree for some intution about this.]
+So that forward diffusion ultimately simplifies to this:
 
-What happens when T is large vs small? https://arxiv.org/pdf/2206.05173.pdf
+q(xt|x0) = N (xt;√α¯tx0,(1 − α¯t)I)
 
-So far in order to see what our image would look like at timestep T we would need to apply it 100 times. If we want a few Xt so that a neural net can interpolate and learn the reverse process then we need 100 timesteps times the amount of samples per image you are training.
+Note that the forward process involves no training or neural networks, it is a closed-form formula for taking an input and finding the result of applying a specific amount of random degradations. If forward diffusion is q(xt|x0) then reverse diffusion would be q(x0|xt) where q(xt-1|xt) x q(xt-2|xt-1) x q(x0-2|x1). The issue is we actually don't know x0, i.e. the distribution of our population, we only have an approximation and therefore deriving reverse diffusion analytically is not possible. Instead we approximate this reverse function with a neural network. This implies we will need to design a loss function (i.e. loss function).
 
-But through some clever algebra, it has been shown that to produce time a sample at time T you can do this in one step, given a prestep where you multiply your variance schedule. This is referred to as the reparamatrization trick.
+The algebraic derivation of our loss function is relatively complex but lets try to think about it intuitively.
 
-So that forward diffusion process simplifies to this:
-
-
-
-
-Note that up to this point the forward process involves no training, no neural networks, it is only the defining mathematically how to take an input that we assume belongs to an undefined population and taking it through a series of stochastic transformations.
-
-So the reverse of the forward diffusion process mathematical is XT|t-1 is t-1|TX, that is given information about TX, define t-1. So T-1|TX and T-2|T-1 ...until T0|t-1. if we knew what the distribution of our input, T0, we might be done. The things is we don't know what that distrubution is, i.e we don't know how to express mathematically mammograms where you can output tumor etc.
-
-This is why we use a neural network, to approximate a high dimensional function. Using out input output pairs which represent the diffusion process for a variety of data that represent our unknown population.
-
-A highly compressed explanation of neural networks but it has been shown that neural networks are universal function approximators given the right architecture. You can imagine them as piece wise linear functions with a bunch of parameters that define the slopes and y interecepts of each of those sections. We use gradient descent then to minimize the error,or our loss function, similarly to how you would fit a line to data. Thus we need a function for our "error" to minimize,
-
-The algebraic derivation of the correct function is relatively complex but lets try to think about it intuitively.
-
-In our case we want a function that defines the "error" or the difference between a picture at an arbitrary state in the diffusion process T and the approximation produced by our neural net which is an estimate of the reverse diffusion process, if we can do that accurately for a bunch of pictures from our populuation and a bunch of timesteps then we know we have arrived at a good approximation of the precise function that does that.
-
-So for part A, a picutre at an arbitrary state in the diffusion process T we can take a picture from our data set (which remember represents a larger unknown population) and apply the forward diffusion process to get X+T+ e. Basically it's orgignal picture + a specific proportion of gaussian error.
+In our case we want a loss function that defines the "error" or difference between a picture at an arbitrary timestep T in the diffusion process and the prediction from our neural net. So the first part, our target is basically an image from the dataset plus a specific amount of degradation. For the second part, our prediction is the output
 
 Ok and so for part B we have what our reverse process approximation outputs which takes t, and random noise and knowing it needs to output something in the realm of XO produces something in the realm.
 
 Ok the result from this is a function that given random noise it can produce a sample from the approximate distrubtion based on our data set.
-
-That is an overview of Diffusion Models.
-
-
-
-
-
 
 
 
