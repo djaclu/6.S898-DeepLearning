@@ -52,7 +52,8 @@
 
 html {
   /* Set the font globally */
-  font-family: var(--sans-font);
+  font-family: SyneMono_Regular;
+  src: url(SyneMono_Regular.tff);
 }
 
 /* Make the body a nice central block */
