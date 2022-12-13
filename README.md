@@ -21,13 +21,10 @@ As soon as we begin to inject the image with random noise, the result becomes a 
 
 Mathematically, stochastic forward diffusion is a Markov Chain. A Markov chain is a way of describing a sequence of events where the probablity of a given state depends on the one immediately precesing it. That is, the image at any step t during the diffusion process depends on the random result at step t-1 before it. In other words, the probability of observing one of the many possible instances of our degraded image at step T is conditional on the observation made at step T-1. The images are referred to as samples because they are an instance of the probability distribution that defines them. Even our original input can be seen as an instance from an unknown distribution, the population referenced earlier.
 
-[Look at tree for some intution about this.]
 
 We can express this in closed format as:
 
 The distribution of T|X0 is the distribution of T1|T0 * T2|T1 * ... * T|T-1.
-
-where T|t-1 is equal to xXXXX
 
 In practice the proportion of the image that is swapped with noise can be set to change (i.e. it is not necessarily constant) during each timestep according to a variance schedule that cointains a sequence of ratios B. So far in order to see what our image would look like at timestep T we would need calculate T conditional probabilities. You can imagine that this would quickly become impractical for a large T. Instead, through some clever algebra, [J.Ho et al., 2020] showed it is possible to calculate this in a single step with a small amount of precalculations. This is referred to as the reparametization trick. 
 
@@ -39,7 +36,7 @@ Note that the forward process involves no training or neural networks, it is a c
 
 The algebraic derivation of our loss function is relatively complex but lets try to think about it intuitively.
 
-In our case we want a loss function that defines the "error" or difference between a picture at an arbitrary timestep T in the diffusion process and the prediction from our neural net. So the first part, our target is basically an image from the dataset plus a specific amount of degradation. For the second part, our prediction is the output
+In our case we want a loss function that defines the "error" or difference between a picture at an arbitrary timestep T in the diffusion process and the prediction from our neural net. So the first part, our target is basically an image from the dataset plus a specific amount of degradation. For the second part, our prediction will be 
 
 Ok and so for part B we have what our reverse process approximation outputs which takes t, and random noise and knowing it needs to output something in the realm of XO produces something in the realm.
 
