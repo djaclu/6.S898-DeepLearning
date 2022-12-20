@@ -58,7 +58,6 @@
 html {
   /* Set the font globally */
   font-family: SyneMono_Regular;
-  src: url(SyneMono_Regular.tff);
 }
 
 /* Make the body a nice central block */
