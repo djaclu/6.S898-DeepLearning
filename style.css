@@ -30,6 +30,11 @@
 }
 
 /* Dark theme */
+@font-face {
+  font-family: SyneMono_Regular;
+  src: url(SyneMono_Regular.tff);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #212121;
