@@ -3,4 +3,7 @@
   src: url("SyneMono_Regular.tff");
 }
 
-
+html {
+  /* Set the font globally */
+  font-family: SyneMono_Regular;
+}
