@@ -27,7 +27,7 @@
 /* Dark theme */
 @font-face {
   font-family: SyneMono_Regular;
-  src: url("SyneMono_Regular.ttf");
+  src: url("/SyneMono_Regular.ttf");
 }
 
 @media (prefers-color-scheme: dark) {
