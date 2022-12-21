@@ -1,0 +1,44 @@
+@font-face {
+  font-family: "SyneMono";
+  src: url("SyneMono.ttf");
+}
+
+html {
+  /* Set the font globally */
+  font-family: SyneMono;
+}
+
+h1 {
+  font-size: calc(
+    var(--base-fontsize) * var(--header-scale) * var(--header-scale) *
+      var(--header-scale) * var(--header-scale)
+  );
+  /*margin-top: calc(var(--line-height) * 1.5rem);*/
+  margin-right: 150px;
+  margin-left: 150px;
+}
+
+h2 {
+font-size: 10px;
+text-align: center;
+}
+
+p {
+  margin-right: 150px;
+  margin-left: 150px;
+}
+
+canvas{
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+img {
+    display: block;
+    width:540px; /* you can use % */
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
